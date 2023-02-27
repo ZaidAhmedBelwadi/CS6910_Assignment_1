@@ -1,7 +1,7 @@
 from keras.datasets import fashion_mnist, mnist
 import numpy as np
 
-def data_preparation(dataset="fashion_mnist"):
+def data(dataset="fashion_mnist"):
 
   # Choosing dataset
   if dataset == "fashion_mnist":
@@ -27,5 +27,9 @@ def data_preparation(dataset="fashion_mnist"):
   x_train = x_train.reshape(x_train.shape[0],x_train.shape[1]*x_train.shape[2])
   x_test = x_test.reshape(x_test.shape[0],x_test.shape[1]*x_test.shape[2])
   x_val = x_val.reshape(x_val.shape[0],x_val.shape[1]*x_val.shape[2])
+  
+  # One hot encoding
+  y_train = np.array([[1 if y==i else 0 for i in range(len(labels))] for y in y_train])
+
 
   return x_train, x_test, x_val, y_train, y_test, y_val, labels
