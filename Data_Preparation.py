@@ -22,5 +22,10 @@ def data_preparation(dataset="fashion_mnist"):
   len_train = int((1-val_fraction)*len(y_train))  # Length of train data after removing validation from it
   x_train, x_val = x_train[:len_train], x_train[len_train:]
   y_train, y_val = y_train[:len_train], y_train[len_train:]
+  
+  # Flatten the x data i.e. from (60000,28,28) to (60000,784)
+  x_train = x_train.reshape(x_train.shape[0],x_train.shape[1]*x_train.shape[2])
+  x_test = x_test.reshape(x_test.shape[0],x_test.shape[1]*x_test.shape[2])
+  x_val = x_val.reshape(x_val.shape[0],x_val.shape[1]*x_val.shape[2])
 
   return x_train, x_test, x_val, y_train, y_test, y_val, labels
