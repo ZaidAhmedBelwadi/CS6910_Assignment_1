@@ -119,3 +119,28 @@ def total_loss(y_data, y_hat_data, func="cross_entropy"):
 
   else:
     sys.exit("Invalid/Undefined loss function")
+
+# Derivative of loss functions
+
+def deriv_act(a, func="sigmoid"):
+
+  if func=="sigmoid":
+    g_a = activate(a,func="sigmoid")
+    return np.multiply(g_a, 1-g_a)
+
+  elif func=="identity":
+    return np.ones(len(a))
+
+  elif func=="tanh":
+    g_a = activate(a,func="tanh")
+    return 1 - g_a**2
+
+  elif func=="ReLU":
+    out = np.zeros(len(a))
+    for i in range(len(a)):
+      if a[i] > 0:
+        out[i] = 1
+    return out
+
+  else:
+    sys.exit("Invalid/Undefined activation function")
