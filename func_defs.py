@@ -102,3 +102,20 @@ def theta_init(x,y,L,N,init_method="random"):
   else:
     sys.exit("Invalid/Undefined initialization method")
 
+def total_loss(y_data, y_hat_data, func="cross_entropy"):
+
+  loss = 0
+  N_samples = y_data.shape[0]
+
+  if func=="cross_entropy":
+    for k in range(N_samples):
+      loss+= -np.log(y_hat_data[k][list(y_data[k]).index(1)])/(N_samples)
+    return loss
+
+  elif func=="mean_squared_error":
+    for k in range(N_samples):
+      loss+= np.sum((y_hat_data[k] - y_data[k])**2)/(N_samples)
+    return loss
+
+  else:
+    sys.exit("Invalid/Undefined loss function")
