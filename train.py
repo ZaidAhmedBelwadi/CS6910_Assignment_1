@@ -1,5 +1,7 @@
-from func_defs import activate,softmax,theta_init
+from func_defs import activate,softmax,theta_init,total_loss, deriv_act
+from data_preparation import data
 import numpy as np
+import sys
 
 def forward_pass(x, theta, L, activation="sigmoid"):
   
@@ -37,9 +39,45 @@ def forward_pass(x, theta, L, activation="sigmoid"):
 
   return a, h, y_hat
 
-x = np.array([0.5,0.2,0.33,1,0,0.7])
-y = np.array([1,0])
-L, N = 5, 10
-theta = theta_init(x,y,5,10,init_method="xavier")
-a, h, y_hat = forward_pass(x, theta, L, activation="sigmoid")
-print(y_hat)
+
+def back_prop(y, theta, L, a, h, y_hat, loss="cross_entropy", activation="sigmoid"):
+
+  '''
+  y = single output data (true class)
+  theta = parameters (W,b)
+  L = No. of hidden layers
+  a = pre-activation
+  h = activation
+  y_hat = predicted y
+  loss="cross_entropy"/"mean_squared_error"
+  activation="sigmoid"/"identity"/"tanh"/"ReLU"
+  '''
+
+  '''
+  All dels are stored as lists where its index i represents the gradient in ith layer.
+  Again del_a[0],del_h[0],del_w[0],del_b[0] have no significance whatsover and is just set as zero.
+  '''
+  W, b = theta
+  del_a, del_h, del_W, del_b = [0]*(L+1), [0]*(L+1), [0]*(L+1), [0]*(L+1)
+
+  # At output layer
+  if loss=="cross_entropy":
+    del_a[L] = -(y-y_hat)
+  elif loss=="mean_squared_error":
+    A = np.sum(y_hat**2) - np.dot(y, y_hat)
+    del_a[L] = -2*(np.multiply(y_hat, (A + y_hat - y)))
+  else:
+    sys.exit("Invalid/Undefined loss function")
+
+  # Hidden layers
+  for k in range(L,1,-1):
+    del_W[k] = np.outer(del_a[k],h[k-1])
+    del_b[k] = del_a[k]
+    del_h[k-1] = np.matmul(W[k].T,del_a[k])
+    del_a[k-1] = np.multiply(del_h[k-1],deriv_act(a[k-1],func=activation))
+
+  # At input layer
+  del_W[1] = np.outer(del_a[1],h[0])
+  del_b[1] = del_a[1]
+
+  return del_W, del_b 
