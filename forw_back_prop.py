@@ -19,6 +19,8 @@ def forward_pass(x, theta, L, activation="sigmoid"):
   '''
 
   # Retrieving weights and biases from theta
+
+  #This is made by me
   W, b = theta
 
   # Initialize a's and h's. Stored as a list which has ndarrays as its elements.
