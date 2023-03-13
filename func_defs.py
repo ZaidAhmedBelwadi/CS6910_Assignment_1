@@ -106,7 +106,7 @@ def theta_init(x,y,L,N,init_method="random"):
 
 # Total loss and accuracy
 
-def metrics(x_data, y_data, theta, L, activation, func="cross_entropy"):
+def metrics(x_data, y_data, theta, L, activation, alpha, func="cross_entropy"):
 
   y_hat_data = np.zeros(y_data.shape)
   loss = 0
@@ -117,6 +117,7 @@ def metrics(x_data, y_data, theta, L, activation, func="cross_entropy"):
 
 
   # Total loss
+
   if func=="cross_entropy":
     N_samples = y_data.shape[0]
     for k in range(N_samples):
@@ -131,6 +132,11 @@ def metrics(x_data, y_data, theta, L, activation, func="cross_entropy"):
   else:
     sys.exit("Invalid/Undefined loss function")
 
+  # Adding Regularization term
+  W = theta[1]
+  for k in range(1, L+1):
+    loss+= (alpha/(2*N_samples))*np.sum(W[k]**2)
+
   # Accuracy
   corr_pred = 0
   for i in range(len(y_data)):
@@ -139,6 +145,8 @@ def metrics(x_data, y_data, theta, L, activation, func="cross_entropy"):
 
   # Returning all the metrics
   return loss, accuracy
+
+
 # Derivative of loss functions
 
 def deriv_act(a, func="sigmoid"):
