@@ -40,26 +40,26 @@ def train_NN(epochs=1, batch_size=4, loss="cross_entropy", optimizer="sgd",
   for epoch_no in range(1,epochs+1):
     
     if optimizer == "sgd":
-      theta = sgd_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay)
+      theta = sgd_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size)
 
     elif optimizer == "momentum":
       if epoch_no == 1:
         theta_momentum = ([0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)])
 
-      theta, theta_momentum = momentum_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, momentum, 
+      theta, theta_momentum = momentum_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, momentum, 
                                                  theta_momentum=theta_momentum)
     elif optimizer == "nag":
       if epoch_no == 1:
         theta_momentum = ([0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)])
 
-      theta, theta_momentum = nag_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, momentum,
+      theta, theta_momentum = nag_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, momentum,
                                             theta_momentum=theta_momentum) 
       
     elif optimizer == "rmsprop":
       if epoch_no == 1:
         v_theta_history = ([0]*(L+1), [0]*(L+1))
 
-      theta, v_theta_history = rmsprop_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, 
+      theta, v_theta_history = rmsprop_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay, batch_size, 
                                                  beta, epsilon, v_theta_history=v_theta_history) 
 
     elif optimizer == "adam":
@@ -68,7 +68,7 @@ def train_NN(epochs=1, batch_size=4, loss="cross_entropy", optimizer="sgd",
         theta_momentum_prev = ([0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)])
         update_count = 1
 
-      theta, v_theta_history, theta_momentum_prev, update_count = adam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay,
+      theta, v_theta_history, theta_momentum_prev, update_count = adam_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay,
                                                                                  batch_size, beta1, beta2, epsilon, v_theta_history=v_theta_history,
                                                                                  theta_momentum_prev=theta_momentum_prev, update_count=update_count)
 
@@ -78,7 +78,7 @@ def train_NN(epochs=1, batch_size=4, loss="cross_entropy", optimizer="sgd",
         theta_momentum_prev = ([0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)])
         update_count = 1
 
-      theta, v_theta_history, theta_momentum_prev, update_count = nadam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay,
+      theta, v_theta_history, theta_momentum_prev, update_count = nadam_one_epoch(x_train, y_train, theta, L, activation, loss, learning_rate, weight_decay,
                                                                                  batch_size, beta1, beta2, epsilon, v_theta_history=v_theta_history,
                                                                                  theta_momentum_prev=theta_momentum_prev, update_count=update_count)
     

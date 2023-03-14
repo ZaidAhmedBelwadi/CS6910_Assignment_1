@@ -39,7 +39,7 @@ def forward_pass(x, theta, L, activation):
   return a, h, y_hat
 
 
-def back_prop(y, theta, L, a, h, y_hat, loss, activation, alpha):
+def back_prop(y, theta, L, a, h, y_hat, loss, activation):
 
   '''
   y = single output data (true class)
@@ -70,13 +70,13 @@ def back_prop(y, theta, L, a, h, y_hat, loss, activation, alpha):
 
   # Hidden layers
   for k in range(L,1,-1):
-    del_W[k] = np.outer(del_a[k],h[k-1]) + alpha*W[k] # L2 Regularised
+    del_W[k] = np.outer(del_a[k],h[k-1])
     del_b[k] = del_a[k]
     del_h[k-1] = np.matmul(W[k].T,del_a[k])
     del_a[k-1] = np.multiply(del_h[k-1],deriv_act(a[k-1],func=activation))
 
   # At input layer
-  del_W[1] = np.outer(del_a[1],h[0])  + alpha*W[1] # L2 Regularised
+  del_W[1] = np.outer(del_a[1],h[0])
   del_b[1] = del_a[1]
 
   return del_W, del_b 

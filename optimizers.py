@@ -3,25 +3,37 @@ import numpy as np
 
 # Stochastic gradient descent
 
-def sgd_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha):
+def sgd_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size):
 
 # Training for single epoch
   W, b = theta
-  # dW,db = single data point grads
+
+  # dW,db = single data point grads. del_W, del_b = Accumulation of grads
   del_W, del_b = [0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)]
+  count = 0
 
   for i in range(len(y_train)):
+
     a, h, y_hat = forward_pass(x_train[i], theta, L, activation)
-    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation, alpha)
-    W[1:] = [W[k] - eta*dW[k] for k in range(1,L+1)]
-    b[1:] = [b[k] - eta*db[k] for k in range(1,L+1)]
-    theta = (W, b)
+    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation)
+    del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
+    del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
+    count +=1
+
+    if count==batch_size:
+      W[1:] = [(1 - eta*alpha)*W[k] - eta*del_W[k] for k in range(1,L+1)]
+      b[1:] = [b[k] - eta*del_b[k] for k in range(1,L+1)] 
+      theta = (W, b)
+      
+      del_W, del_b = [0]+[np.zeros(W[k].shape) for k in range(1,L+1)], [0]+[np.zeros(b[k].shape) for k in range(1,L+1)]
+      count=0
+  
   return theta
 
 
 # Momentum based gradient descent
 
-def momentum_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size, momentum,
+def momentum_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size, momentum,
                        theta_momentum = ()):
 
 # Training for single epoch
@@ -35,7 +47,7 @@ def momentum_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, 
   for i in range(len(y_train)):
     
     a, h, y_hat = forward_pass(x_train[i], theta, L, activation)
-    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation, alpha)
+    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation)
     del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
     del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
     count +=1
@@ -44,7 +56,7 @@ def momentum_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, 
       W_momentum, b_momentum = theta_momentum
       W_update = [0]+[momentum*W_momentum[k] + del_W[k] for k in range(1,L+1)]
       b_update = [0]+[momentum*b_momentum[k] + del_b[k] for k in range(1,L+1)]
-      W[1:] = [W[k] - eta*W_update[k] for k in range(1,L+1)]
+      W[1:] = [(1 - eta*alpha)*W[k] - eta*W_update[k] for k in range(1,L+1)]
       b[1:] = [b[k] - eta*b_update[k] for k in range(1,L+1)] 
       
       theta = (W, b)
@@ -58,7 +70,7 @@ def momentum_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, 
 
 # Nesterov accelerated gradient descent
 
-def nag_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size, momentum,
+def nag_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size, momentum,
                   theta_momentum = ()):
   
 # Training for single epoch
@@ -75,7 +87,7 @@ def nag_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, 
   for i in range(len(y_train)):
 
     a, h, y_hat = forward_pass(x_train[i], theta_lookahead, L, activation)
-    dW, db = back_prop(y_train[i], theta_lookahead, L, a, h, y_hat, loss, activation, alpha)
+    dW, db = back_prop(y_train[i], theta_lookahead, L, a, h, y_hat, loss, activation)
     del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
     del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
     count +=1
@@ -84,7 +96,7 @@ def nag_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, 
       W_momentum, b_momentum = theta_momentum
       W_update = [0]+[momentum*W_momentum[k] + del_W[k] for k in range(1,L+1)]
       b_update = [0]+[momentum*b_momentum[k] + del_b[k] for k in range(1,L+1)]
-      W[1:] = [W[k] - eta*W_update[k] for k in range(1,L+1)]
+      W[1:] = [(1 - eta*alpha)*W[k] - eta*W_update[k] for k in range(1,L+1)]
       b[1:] = [b[k] - eta*b_update[k] for k in range(1,L+1)] 
       
       theta = (W, b)
@@ -101,7 +113,7 @@ def nag_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, 
 
 # RMSProp
 
-def rmsprop_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
+def rmsprop_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
                       beta,epsilon, v_theta_history=()):
   
 # Training for single epoch
@@ -114,7 +126,7 @@ def rmsprop_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, e
   for i in range(len(y_train)):
 
     a, h, y_hat = forward_pass(x_train[i], theta, L, activation)
-    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation, alpha)
+    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation)
     del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
     del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
     count +=1
@@ -124,7 +136,7 @@ def rmsprop_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, e
       v_W_curr = [0]+[beta*v_W_history[k] + (1-beta)*np.sum(del_W[k]**2) for k in range(1,L+1)] 
       v_b_curr = [0]+[beta*v_b_history[k] + (1-beta)*np.sum(del_b[k]**2) for k in range(1,L+1)]
  
-      W[1:] = [W[k] - (eta/(np.sqrt(v_W_curr[k])+epsilon))*del_W[k] for k in range(1,L+1)]
+      W[1:] = [(1 - eta*alpha)*W[k] - (eta/(np.sqrt(v_W_curr[k])+epsilon))*del_W[k] for k in range(1,L+1)]
       b[1:] = [b[k] - (eta/(np.sqrt(v_W_curr[k])+epsilon))*del_b[k] for k in range(1,L+1)] 
 
       theta = (W, b)
@@ -137,7 +149,7 @@ def rmsprop_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, e
   
 # Adam
 
-def adam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
+def adam_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
                       beta1, beta2, epsilon, v_theta_history=(), theta_momentum_prev=(), update_count=1):
   
 # Training for single epoch
@@ -151,7 +163,7 @@ def adam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta,
   for i in range(len(y_train)):
 
     a, h, y_hat = forward_pass(x_train[i], theta, L, activation)
-    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation, alpha)
+    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation)
     del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
     del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
     count +=1
@@ -169,7 +181,7 @@ def adam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta,
       v_W_curr_hat = [0]+[v_W_curr[k]/(1 - beta2**update_count) for k in range(1,L+1)]
       v_b_curr_hat = [0]+[v_b_curr[k]/(1 - beta2**update_count) for k in range(1,L+1)]
 
-      W[1:] = [W[k] - (eta/(np.sqrt(v_W_curr_hat[k])+epsilon))*W_momentum_curr_hat[k] for k in range(1,L+1)]
+      W[1:] = [(1 - eta*alpha)*W[k] - (eta/(np.sqrt(v_W_curr_hat[k])+epsilon))*W_momentum_curr_hat[k] for k in range(1,L+1)]
       b[1:] = [b[k] - (eta/(np.sqrt(v_b_curr_hat[k])+epsilon))*b_momentum_curr_hat[k] for k in range(1,L+1)] 
 
       theta = (W, b)
@@ -185,7 +197,7 @@ def adam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta,
 
 # NAdam
 
-def nadam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
+def nadam_one_epoch(x_train, y_train, theta, L, activation, loss, eta, alpha, batch_size,
                       beta1, beta2, epsilon, v_theta_history=(), theta_momentum_prev=(), update_count=1):
   
 # Training for single epoch
@@ -199,7 +211,7 @@ def nadam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta
   for i in range(len(y_train)):
 
     a, h, y_hat = forward_pass(x_train[i], theta, L, activation)
-    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation, alpha)
+    dW, db = back_prop(y_train[i], theta, L, a, h, y_hat, loss, activation)
     del_W[1:] = [del_W[k]+dW[k] for k in range(1,L+1)]
     del_b[1:] = [del_b[k]+db[k] for k in range(1,L+1)]
     count +=1
@@ -217,7 +229,7 @@ def nadam_one_epoch(optimizer, x_train, y_train, theta, L, activation, loss, eta
       v_W_curr_hat = [0]+[v_W_curr[k]/(1 - beta2**update_count) for k in range(1,L+1)]
       v_b_curr_hat = [0]+[v_b_curr[k]/(1 - beta2**update_count) for k in range(1,L+1)]
 
-      W[1:] = [W[k] - (eta/(np.sqrt(v_W_curr_hat[k])+epsilon))*(beta1*W_momentum_curr_hat[k] + ((1-beta1)/(1 - beta1**update_count))*del_W[k]) for k in range(1,L+1)]
+      W[1:] = [(1 - eta*alpha)*W[k] - (eta/(np.sqrt(v_W_curr_hat[k])+epsilon))*(beta1*W_momentum_curr_hat[k] + ((1-beta1)/(1 - beta1**update_count))*del_W[k]) for k in range(1,L+1)]
       b[1:] = [b[k] - (eta/(np.sqrt(v_b_curr_hat[k])+epsilon))*(beta1*b_momentum_curr_hat[k] + ((1-beta1)/(1 - beta1**update_count))*del_b[k]) for k in range(1,L+1)] 
 
       theta = (W, b)
