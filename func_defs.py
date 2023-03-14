@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-from forw_back_prop import forward_pass
 
 # Activation Functions
 def activate(a, func="sigmoid"):
@@ -80,7 +79,7 @@ def theta_init(x,y,L,N,init_method="random"):
 
     return W, b
 
-  elif init_method=="xavier":
+  elif init_method=="Xavier":
 
     # Input layer to 1st hidden layer
     sigma = (np.sqrt(6)/np.sqrt(N+N_input))
@@ -102,49 +101,6 @@ def theta_init(x,y,L,N,init_method="random"):
 
   else:
     sys.exit("Invalid/Undefined initialization method")
-
-
-# Total loss and accuracy
-
-def metrics(x_data, y_data, theta, L, activation, alpha, func="cross_entropy"):
-
-  y_hat_data = np.zeros(y_data.shape)
-  loss = 0
-
-  # Forward propogation with data
-  for i in range(len(y_data)):
-    y_hat_data[i] = forward_pass(x_data[i], theta, L, activation)[2]
-
-
-  # Total loss
-
-  if func=="cross_entropy":
-    N_samples = y_data.shape[0]
-    for k in range(N_samples):
-      loss+= -np.log(y_hat_data[k][list(y_data[k]).index(1)])/(N_samples)
-
-  elif func=="mean_squared_error":
-
-    N_samples = y_data.shape[0] 
-    for k in range(N_samples):
-      loss+= np.sum((y_hat_data[k] - y_data[k])**2)/(N_samples)
-
-  else:
-    sys.exit("Invalid/Undefined loss function")
-
-  # Adding Regularization term
-  W = theta[1]
-  for k in range(1, L+1):
-    loss+= (alpha/(2*N_samples))*np.sum(W[k]**2)
-
-  # Accuracy
-  corr_pred = 0
-  for i in range(len(y_data)):
-    corr_pred += y_data[i][np.argmax(y_hat_data[i])]
-  accuracy = str(100*corr_pred/(len(y_data)))+"%"
-
-  # Returning all the metrics
-  return loss, accuracy
 
 
 # Derivative of loss functions
